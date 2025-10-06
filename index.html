@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadex - Secure Key Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #f9a8d4, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #fbcfe8, #f472b6);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .form-radio:checked {
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e");
+            border-color: #ec4899;
+            background-color: #ec4899;
+        }
+        /* Hide scrollbar for aesthetics but allow scrolling */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .loader {
+            border: 4px solid #f3f3f340;
+            border-top: 4px solid #f472b6;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white antialiased">
+    <!-- Main container -->
+    <div id="app" class="min-h-screen flex flex-col items-center justify-center p-4 transition-opacity duration-500">
+        <!-- Loading Spinner -->
+        <div id="loading-view" class="flex flex-col items-center justify-center">
+            <div class="loader"></div>
+            <p class="mt-4 text-gray-400">Connecting to Shadex...</p>
+        </div>
+
+        <!-- Purchase/Landing View -->
+        <div id="purchase-view" class="w-full max-w-lg hidden">
+            <div class="text-center mb-8">
+                <div class="inline-block mb-4">
+                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#FFFFFF; stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#F472B6; stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C12.91 4 13.79 4.15 14.6 4.4L12 12L9.6 19.6C9.85 19.85 10.16 20 10.5 20H12Z" fill="url(#logoGradient)"/>
+                         <path d="M12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20V4Z" fill="url(#logoGradient)"/>
+                    </svg>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold tracking-tight">Welcome to <span class="gradient-text">Shadex</span></h1>
+                <p class="text-gray-400 mt-2">The best hook</p>
+            </div>
+             <div class="glass-card rounded-xl p-6 md:p-8 space-y-6">
+                 <div>
+                    <h2 class="text-xl font-semibold text-center">Get Access</h2>
+                    <p class="text-gray-400 mt-1 text-center">To purchase a key, please contact us on Discord.</p>
+                </div>
+                <a href="https://discord.gg/9CwzDXj4" target="_blank" class="w-full flex items-center justify-center gap-3 bg-indigo-500 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-600 transition-colors">
+                    <svg class="w-6 h-6" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Discord</title><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8852-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4464.8245-.6662 1.2695a18.168 18.168 0 00-5.4856 0c-.2198-.445-.4552-.8942-.6662-1.2695a.0741.0741 0 00-.0785-.0371 19.7913 19.7913 0 00-4.8852 1.5152.069.069 0 00-.0321.0256C.7242 6.4468-1.655 12.2922 1.2581 17.9622a.0934.0934 0 00.0652.0501 19.982 19.982 0 004.4446.9925.0741.0741 0 00.0766-.0256c.433-.4598.8342-.9585 1.2045-1.481.021-.0277.0189-.063-.0042-.0868a15.7222 15.7222 0 01-1.579-1.6941.0741.0741 0 01.0042-.1036c.224-.1583.444-.3208.6598-.4854a.0741.0741 0 01.0724-.0042c2.9328 1.481 6.2736 1.481 9.2485 0a.0741.0741 0 01.0724.0042c.2158.1646.4358.3271.6598.4854a.0741.0741 0 01.0042.1036 15.7222 15.7222 0 01-1.579 1.6941.0741.0741 0 00-.0042.0868c.3703.5225.7715 1.0212 1.2045 1.481a.0741.0741 0 00.0766.0256 19.982 19.982 0 004.4446-.9925.0934.0934 0 00.0652-.0501c2.9131-5.6699.5339-11.5153-2.208-13.5668a.069.069 0 00-.0321-.0256zM8.0203 15.111c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9744-2.419 2.1569-2.419 1.1825 0 2.157 1.0858 2.157 2.419 0 1.3333-.9745 2.419-2.157 2.419zm7.9592 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9744-2.419 2.1569-2.419 1.1825 0 2.157 1.0858 2.157 2.419 0 1.3333-.9745 2.419-2.157 2.419z"></path></svg>
+                    Join Discord Server
+                </a>
+                <div class="mt-2 flex items-center gap-2">
+                    <div class="flex-1 flex items-center gap-3 p-3 bg-gray-800 border border-gray-700 rounded-lg">
+                        <svg class="w-5 h-5 text-indigo-400" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Discord</title><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8852-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4464.8245-.6662 1.2695a18.168 18.168 0 00-5.4856 0c-.2198-.445-.4552-.8942-.6662-1.2695a.0741.0741 0 00-.0785-.0371 19.7913 19.7913 0 00-4.8852 1.5152.069.069 0 00-.0321.0256C.7242 6.4468-1.655 12.2922 1.2581 17.9622a.0934.0934 0 00.0652.0501 19.982 19.982 0 004.4446.9925.0741.0741 0 00.0766-.0256c.433-.4598.8342-.9585 1.2045-1.481.021-.0277.0189-.063-.0042-.0868a15.7222 15.7222 0 01-1.579-1.6941.0741.0741 0 01.0042-.1036c.224-.1583.444-.3208.6598-.4854a.0741.0741 0 01.0724-.0042c2.9328 1.481 6.2736 1.481 9.2485 0a.0741.0741 0 01.0724.0042c.2158.1646.4358.3271.6598.4854a.0741.0741 0 01.0042.1036 15.7222 15.7222 0 01-1.579 1.6941.0741.0741 0 00-.0042.0868c.3703.5225.7715 1.0212 1.2045 1.481a.0741.0741 0 00.0766.0256 19.982 19.982 0 004.4446-.9925.0934.0934 0 00.0652-.0501c2.9131-5.6699.5339-11.5153-2.208-13.5668a.069.069 0 00-.0321-.0256zM8.0203 15.111c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9744-2.419 2.1569-2.419 1.1825 0 2.157 1.0858 2.157 2.419 0 1.3333-.9745 2.419-2.157 2.419zm7.9592 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9744-2.419 2.1569-2.419 1.1825 0 2.157 1.0858 2.157 2.419 0 1.3333-.9745 2.419-2.157 2.419z"></path></svg>
+                        <span id="discord-username-purchase" class="font-mono text-pink-300">osamaaa2311</span>
+                    </div>
+                    <button id="copy-discord-btn-purchase" class="flex-shrink-0 flex items-center gap-1.5 text-sm text-gray-300 hover:text-white p-3 rounded-md bg-gray-700/50 hover:bg-gray-700 transition">
+                        <i data-lucide="copy" class="w-4 h-4"></i> Copy
+                    </button>
+                </div>
+                 <div class="mt-6 flex gap-3">
+                    <button id="go-to-login-btn" class="w-full bg-gray-700 text-white font-semibold py-2.5 rounded-lg hover:bg-gray-600 transition-colors">Member Login</button>
+                    <button id="go-to-register-btn" class="w-full gradient-bg text-white font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity">Register Key</button>
+                </div>
+            </div>
+             <p class="text-xs text-gray-600 mt-4 text-center">
+                <a href="#" id="admin-login-link" class="hover:text-gray-400">Admin Login</a>
+            </p>
+        </div>
+        
+        <!-- Member Login View -->
+        <div id="login-view" class="w-full max-w-md hidden">
+             <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold">Member Login</h1>
+                <p class="text-gray-400 mt-2">Access your Shadex account.</p>
+            </div>
+            <div class="glass-card rounded-xl p-6 md:p-8">
+                <form id="login-form">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="login-username" class="text-sm font-medium text-gray-300">Username</label>
+                            <input type="text" id="login-username" required class="mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-pink-500 focus:outline-none transition">
+                        </div>
+                        <div>
+                            <label for="login-password" class="text-sm font-medium text-gray-300">Password</label>
+                            <input type="password" id="login-password" required class="mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-pink-500 focus:outline-none transition">
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <button type="submit" class="w-full gradient-bg text-white font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity">Sign In</button>
+                    </div>
+                </form>
+                <p class="text-xs text-gray-500 mt-4 text-center">
+                    No account? <a href="#" id="login-to-register-link" class="font-medium text-pink-400 hover:underline">Register with a key</a>
+                </p>
+            </div>
+             <button id="login-back-btn" class="mt-4 text-sm text-gray-400 hover:text-white transition-colors w-full">← Back to Home</button>
+        </div>
+
+        <!-- Member Register View -->
+        <div id="register-view" class="w-full max-w-md hidden">
+             <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold">Create Your Account</h1>
+                <p class="text-gray-400 mt-2">Activate your purchased key to get started.</p>
+            </div>
+            <div class="glass-card rounded-xl p-6 md:p-8">
+                <form id="register-form">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="register-key" class="text-sm font-medium text-gray-300">Purchased Key</label>
+                            <input type="text" id="register-key" required placeholder="shdx_live_..." class="mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-pink-500 focus:outline-none transition font-mono">
+                        </div>
+                         <div>
+                            <label for="register-username" class="text-sm font-medium text-gray-300">Username</label>
+                            <input type="text" id="register-username" required class="mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-pink-500 focus:outline-none transition">
+                        </div>
+                        <div>
+                            <label for="register-password" class="text-sm font-medium text-gray-300">Password</label>
+                            <input type="password" id="register-password" required class="mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-pink-500 focus:outline-none transition">
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <button type="submit" class="w-full gradient-bg text-white font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity">Create Account</button>
+                    </div>
+                </form>
+                 <p class="text-xs text-gray-500 mt-4 text-center">
+                    Already have an account? <a href="#" id="register-to-login-link" class="font-medium text-pink-400 hover:underline">Log in</a>
+                </p>
+            </div>
+            <button id="register-back-btn" class="mt-4 text-sm text-gray-400 hover:text-white transition-colors w-full">← Back to Home</button>
+        </div>
+        
+        <!-- Admin Login View -->
+        <div id="admin-login-view" class="w-full max-w-md hidden">
+             <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold">Admin Login</h1>
+            </div>
+            <div class="glass-card rounded-xl p-6 md:p-8">
+                <form id="admin-login-form">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="admin-password" class="text-sm font-medium text-gray-300">Password</label>
+                            <input type="password" id="admin-password" required class="mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-pink-500 focus:outline-none transition">
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <button type="submit" class="w-full gradient-bg text-white font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity">Enter</button>
+                    </div>
+                </form>
+            </div>
+            <button id="admin-login-back-btn" class="mt-4 text-sm text-gray-400 hover:text-white transition-colors w-full">← Back to Home</button>
+        </div>
+
+        <!-- Admin Dashboard View -->
+        <div id="admin-dashboard-view" class="w-full max-w-6xl hidden">
+            <!-- Header -->
+            <header class="flex items-center justify-between mb-8">
+                <div class="flex items-center gap-3">
+                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C12.91 4 13.79 4.15 14.6 4.4L12 12L9.6 19.6C9.85 19.85 10.16 20 10.5 20H12Z" fill="url(#logoGradient)"/>
+                         <path d="M12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20V4Z" fill="url(#logoGradient)"/>
+                    </svg>
+                    <h1 class="text-2xl font-bold">Shadex Admin</h1>
+                </div>
+                <button class="logout-btn flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-medium">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    Logout
+                </button>
+            </header>
+
+            <!-- Main Content -->
+            <main>
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                    <h2 class="text-xl font-semibold">Manage API Keys</h2>
+                    <button id="generate-key-btn" class="w-full md:w-auto mt-4 md:mt-0 flex items-center justify-center gap-2 gradient-bg text-white font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition-opacity">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                        Generate New Key
+                    </button>
+                </div>
+                
+                <!-- Keys List -->
+                <div class="glass-card rounded-lg overflow-hidden">
+                    <div class="max-h-[60vh] overflow-y-auto no-scrollbar">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-gray-800/50">
+                                <tr>
+                                    <th class="px-4 py-3 font-medium">Key</th>
+                                    <th class="px-4 py-3 font-medium">Status</th>
+                                    <th class="px-4 py-3 font-medium">Expires</th>
+                                    <th class="px-4 py-3 font-medium">Claimed By</th>
+                                    <th class="px-4 py-3 font-medium text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="keys-list-body">
+                                <!-- Key rows will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                     <div id="no-keys-message" class="text-center py-12">
+                        <i data-lucide="key-round" class="w-12 h-12 mx-auto text-gray-500"></i>
+                        <h3 class="mt-4 text-lg font-medium text-gray-300">No keys yet</h3>
+                        <p class="mt-1 text-sm text-gray-400">Generate your first key to get started.</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <!-- Member Dashboard View -->
+        <div id="member-dashboard-view" class="w-full max-w-lg hidden">
+            <header class="flex items-center justify-between mb-8">
+                <div class="flex items-center gap-3">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C12.91 4 13.79 4.15 14.6 4.4L12 12L9.6 19.6C9.85 19.85 10.16 20 10.5 20H12Z" fill="url(#logoGradient)"/>
+                        <path d="M12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20V4Z" fill="url(#logoGradient)"/>
+                    </svg>
+                    <h1 class="text-2xl font-bold">Shadex Member</h1>
+                </div>
+                <button class="logout-btn flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-medium">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    Logout
+                </button>
+            </header>
+            <main>
+                <div class="glass-card rounded-xl p-6 md:p-8 space-y-6">
+                    <div>
+                        <h2 class="text-xl font-semibold">Welcome, <span id="member-username">User</span>!</h2>
+                        <p class="text-gray-400 mt-1">Here is your license and download.</p>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-300">Your License Key</label>
+                        <div class="mt-2 flex items-center gap-2">
+                            <div class="flex-1 p-3 bg-gray-800 border border-gray-700 rounded-lg">
+                                <p id="member-key-value" class="font-mono text-sm text-pink-300 truncate"></p>
+                            </div>
+                            <button id="member-copy-key-btn" class="flex-shrink-0 flex items-center gap-1.5 text-sm text-gray-300 hover:text-white p-3 rounded-md bg-gray-700/50 hover:bg-gray-700 transition">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">Expires: <span id="member-key-expiry"></span></p>
+                    </div>
+                    <a href="#" id="download-btn" class="w-full flex items-center justify-center gap-3 gradient-bg text-white font-semibold py-3 px-4 rounded-lg hover:opacity-90 transition-opacity">
+                        <i data-lucide="download" class="w-5 h-5"></i>
+                        Download Hook (v1.0.0)
+                    </a>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-5 right-5 bg-gray-800 border-green-500 text-white px-4 py-2 rounded-lg shadow-lg transform translate-x-[150%] transition-transform duration-300 ease-in-out z-50">
+        <p id="toast-message">Default Message</p>
+    </div>
+
+    <!-- Generate Key Modal -->
+    <div id="generate-key-modal" class="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center p-4 hidden z-50 transition-opacity duration-300 opacity-0">
+        <div class="glass-card rounded-xl p-6 md:p-8 w-full max-w-md transform transition-transform duration-300 scale-95">
+            <h3 class="text-xl font-semibold mb-6">Generate New Key</h3>
+            <form id="generate-key-form">
+                <label class="text-sm font-medium text-gray-300">Key Expiration</label>
+                <div class="mt-2 grid grid-cols-2 gap-3">
+                    <label class="flex items-center p-3 bg-gray-800 border border-gray-700 has-[:checked]:border-pink-500 rounded-lg cursor-pointer transition">
+                        <input type="radio" name="expiration" value="permanent" class="form-radio h-4 w-4 text-pink-600">
+                        <span class="ml-3 text-sm">Permanent</span>
+                    </label>
+                    <label class="flex items-center p-3 bg-gray-800 border border-gray-700 has-[:checked]:border-pink-500 rounded-lg cursor-pointer transition">
+                        <input type="radio" name="expiration" value="7" class="form-radio h-4 w-4 text-pink-600" checked>
+                        <span class="ml-3 text-sm">7 Days</span>
+                    </label>
+                    <label class="flex items-center p-3 bg-gray-800 border border-gray-700 has-[:checked]:border-pink-500 rounded-lg cursor-pointer transition">
+                        <input type="radio" name="expiration" value="30" class="form-radio h-4 w-4 text-pink-600">
+                        <span class="ml-3 text-sm">30 Days</span>
+                    </label>
+                    <label class="flex items-center p-3 bg-gray-800 border border-gray-700 has-[:checked]:border-pink-500 rounded-lg cursor-pointer transition">
+                        <input type="radio" name="expiration" value="90" class="form-radio h-4 w-4 text-pink-600">
+                        <span class="ml-3 text-sm">90 Days</span>
+                    </label>
+                </div>
+                <div class="mt-8 flex gap-3">
+                    <button type="button" id="cancel-modal-btn" class="w-full bg-gray-700 text-white font-semibold py-2.5 rounded-lg hover:bg-gray-600">Cancel</button>
+                    <button type="submit" class="w-full gradient-bg text-white font-semibold py-2.5 rounded-lg hover:opacity-90">Generate Key</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc, onSnapshot, deleteDoc, setLogLevel, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            lucide.createIcons();
+            
+            // --- GLOBAL FIREBASE & APP STATE ---
+            let auth, db;
+            let loggedInUser = null;
+            let keysUnsubscribe = null; // To detach the real-time listener on logout
+            
+            // --- DOM ELEMENTS ---
+            const allViews = document.querySelectorAll('#app > div');
+            const loadingView = document.getElementById('loading-view');
+            const purchaseView = document.getElementById('purchase-view');
+            const loginView = document.getElementById('login-view');
+            const registerView = document.getElementById('register-view');
+            const adminLoginView = document.getElementById('admin-login-view');
+            const adminDashboardView = document.getElementById('admin-dashboard-view');
+            const memberDashboardView = document.getElementById('member-dashboard-view');
+            // ... (all other DOM element selections remain the same)
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const goToLoginBtn = document.getElementById('go-to-login-btn');
+            const goToRegisterBtn = document.getElementById('go-to-register-btn');
+            const adminLoginLink = document.getElementById('admin-login-link');
+            const loginToRegisterLink = document.getElementById('login-to-register-link');
+            const registerToLoginLink = document.getElementById('register-to-login-link');
+            const backBtns = document.querySelectorAll('#login-back-btn, #register-back-btn, #admin-login-back-btn');
+            const logoutBtns = document.querySelectorAll('.logout-btn');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const adminLoginForm = document.getElementById('admin-login-form');
+            const generateKeyBtn = document.getElementById('generate-key-btn');
+            const keysListBody = document.getElementById('keys-list-body');
+            const noKeysMessage = document.getElementById('no-keys-message');
+            const generateKeyModal = document.getElementById('generate-key-modal');
+            const generateKeyForm = document.getElementById('generate-key-form');
+            const cancelModalBtn = document.getElementById('cancel-modal-btn');
+            const memberUsername = document.getElementById('member-username');
+            const memberKeyValue = document.getElementById('member-key-value');
+            const memberKeyExpiry = document.getElementById('member-key-expiry');
+            const memberCopyKeyBtn = document.getElementById('member-copy-key-btn');
+            const copyDiscordBtnPurchase = document.getElementById('copy-discord-btn-purchase');
+            const discordUsernamePurchase = document.getElementById('discord-username-purchase');
+
+
+            // --- CORE FUNCTIONS ---
+            const showView = (viewToShow) => {
+                allViews.forEach(view => view.classList.add('hidden'));
+                viewToShow.classList.remove('hidden');
+            };
+
+            const showToast = (message, isSuccess = true) => {
+                toastMessage.textContent = message;
+                toast.classList.remove('border-red-500', 'border-green-500');
+                toast.classList.add(isSuccess ? 'border-green-500' : 'border-red-500');
+                toast.classList.remove('translate-x-[150%]');
+                setTimeout(() => {
+                    toast.classList.add('translate-x-[150%]');
+                }, 3000);
+            };
+
+            const copyTextWithExecCommand = (text) => {
+                return new Promise((resolve, reject) => {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    // Make the textarea out of sight
+                    textArea.style.position = "fixed";
+                    textArea.style.top = "-9999px";
+                    textArea.style.left = "-9999px";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                        const successful = document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        if (successful) {
+                            resolve();
+                        } else {
+                            reject(new Error('Fallback copy failed'));
+                        }
+                    } catch (err) {
+                        document.body.removeChild(textArea);
+                        reject(err);
+                    }
+                });
+            };
+
+             // --- FIREBASE INITIALIZATION ---
+            async function initializeFirebase() {
+                try {
+                    // These are special variables provided by the environment
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                    const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
+                    if (!firebaseConfig.apiKey) {
+                        showToast("Firebase configuration is missing.", false);
+                        return;
+                    }
+
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+                    setLogLevel('debug');
+
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            console.log("Authenticated user found:", user.uid);
+                            showView(purchaseView);
+                        } else {
+                            console.log("No user found, signing in anonymously or with token.");
+                            // Sign in the user. This is required to interact with Firestore based on security rules.
+                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                                signInWithCustomToken(auth, __initial_auth_token).catch(error => console.error("Custom token sign-in error:", error));
+                            } else {
+                                signInAnonymously(auth).catch(error => console.error("Anonymous sign-in error:", error));
+                            }
+                        }
+                    });
+
+                } catch (error) {
+                    console.error("Firebase Init Error:", error);
+                    showToast("Failed to initialize. Check console.", false);
+                }
+            }
+
+            // --- RENDER FUNCTIONS ---
+            function listenForKeys() {
+                // Detach any previous listener
+                if (keysUnsubscribe) keysUnsubscribe();
+
+                const keysCollection = collection(db, `artifacts/${__app_id}/public/data/keys`);
+                
+                keysUnsubscribe = onSnapshot(keysCollection, (snapshot) => {
+                    const allKeys = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    // Simple in-memory sort; for larger datasets, use Firestore's orderBy
+                    allKeys.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    
+                    keysListBody.innerHTML = '';
+                    if (allKeys.length === 0) {
+                        noKeysMessage.style.display = 'block';
+                        keysListBody.closest('.glass-card').querySelector('table').classList.add('hidden');
+                    } else {
+                        noKeysMessage.style.display = 'none';
+                        keysListBody.closest('.glass-card').querySelector('table').classList.remove('hidden');
+
+                        allKeys.forEach(key => {
+                            const row = document.createElement('tr');
+                            row.className = 'border-b border-gray-800';
+
+                            const now = new Date();
+                            const isPermanent = key.expiresAt === null;
+                            const expirationDate = isPermanent ? null : new Date(key.expiresAt);
+                            const isExpired = !isPermanent && expirationDate < now;
+
+                            let statusBadge;
+                            if (isExpired) {
+                                statusBadge = `<span class="text-xs font-medium px-2 py-0.5 rounded-full bg-red-900/50 text-red-400">Expired</span>`;
+                            } else if (key.status === 'claimed') {
+                                statusBadge = `<span class="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-900/50 text-blue-400">Claimed</span>`;
+                            } else {
+                                statusBadge = `<span class="text-xs font-medium px-2 py-0.5 rounded-full bg-green-900/50 text-green-400">Available</span>`;
+                            }
+
+                            row.innerHTML = `
+                                <td class="px-4 py-3 font-mono text-pink-300 text-xs">${key.value}</td>
+                                <td class="px-4 py-3">${statusBadge}</td>
+                                <td class="px-4 py-3 text-gray-400">${key.expiresAt || 'Never'}</td>
+                                <td class="px-4 py-3 text-gray-300">${key.claimedBy || 'N/A'}</td>
+                                <td class="px-4 py-3 text-right">
+                                    <button data-key-id="${key.id}" class="delete-btn text-red-400 hover:text-red-300 p-1">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </td>
+                            `;
+                            keysListBody.appendChild(row);
+                        });
+                        lucide.createIcons();
+                    }
+                }, error => {
+                    console.error("Error listening for key updates:", error);
+                    showToast("Error fetching keys. Check console.", false);
+                });
+            }
+
+            // --- EVENT HANDLERS ---
+            goToLoginBtn.addEventListener('click', () => showView(loginView));
+            goToRegisterBtn.addEventListener('click', () => showView(registerView));
+            adminLoginLink.addEventListener('click', (e) => { e.preventDefault(); showView(adminLoginView); });
+            loginToRegisterLink.addEventListener('click', (e) => { e.preventDefault(); showView(registerView); });
+            registerToLoginLink.addEventListener('click', (e) => { e.preventDefault(); showView(loginView); });
+            backBtns.forEach(btn => btn.addEventListener('click', () => showView(purchaseView)));
+            logoutBtns.forEach(btn => btn.addEventListener('click', handleLogout));
+            adminLoginForm.addEventListener('submit', handleAdminLogin);
+            registerForm.addEventListener('submit', handleRegister);
+            loginForm.addEventListener('submit', handleLogin);
+            generateKeyBtn.addEventListener('click', openModal);
+            generateKeyForm.addEventListener('submit', handleGenerateKeySubmit);
+            cancelModalBtn.addEventListener('click', closeModal);
+            keysListBody.addEventListener('click', (e) => {
+                if (e.target.closest('.delete-btn')) {
+                    const keyId = e.target.closest('.delete-btn').dataset.keyId;
+                    handleDeleteKey(keyId);
+                }
+            });
+            memberCopyKeyBtn.addEventListener('click', () => {
+                 copyTextWithExecCommand(memberKeyValue.textContent)
+                    .then(() => showToast('Key copied to clipboard!'))
+                    .catch(() => showToast('Failed to copy key.', false));
+            });
+            copyDiscordBtnPurchase.addEventListener('click', () => {
+                copyTextWithExecCommand(discordUsernamePurchase.textContent)
+                    .then(() => showToast('Discord username copied!'))
+                    .catch(() => showToast('Failed to copy username.', false));
+            });
+
+            // --- LOGIC FUNCTIONS ---
+            async function handleAdminLogin(e) {
+                e.preventDefault();
+                // WARNING: This is NOT secure for a real application.
+                // In a real app, you would use Firebase Auth with custom claims for admin roles.
+                const password = document.getElementById('admin-password').value;
+                if (password === 'admin123') { // Replace with a secure check
+                    showView(adminDashboardView);
+                    listenForKeys();
+                } else {
+                    showToast("Incorrect admin password.", false);
+                }
+            }
+
+            async function handleRegister(e) {
+                e.preventDefault();
+                const keyInput = document.getElementById('register-key').value.trim();
+                const usernameInput = document.getElementById('register-username').value.trim();
+                const passwordInput = document.getElementById('register-password').value;
+
+                if (!keyInput || !usernameInput || !passwordInput) {
+                    showToast("All fields are required.", false);
+                    return;
+                }
+                
+                const keysRef = collection(db, `artifacts/${__app_id}/public/data/keys`);
+                const usersRef = collection(db, `artifacts/${__app_id}/public/data/users`);
+                
+                // 1. Check if key is valid and available
+                const keyQuery = query(keysRef, where("value", "==", keyInput));
+                const keySnapshot = await getDocs(keyQuery);
+
+                if (keySnapshot.empty) {
+                    showToast('Invalid key provided.', false); return;
+                }
+                
+                const keyDoc = keySnapshot.docs[0];
+                const keyData = keyDoc.data();
+
+                if (keyData.status !== 'available') {
+                    showToast('This key has already been claimed.', false); return;
+                }
+                if (keyData.expiresAt && new Date(keyData.expiresAt) < new Date()) {
+                     showToast('This key is expired.', false); return;
+                }
+
+                // 2. Check if username is taken
+                const userQuery = query(usersRef, where("usernameLower", "==", usernameInput.toLowerCase()));
+                const userSnapshot = await getDocs(userQuery);
+
+                if (!userSnapshot.empty) {
+                     showToast('Username is already taken.', false); return;
+                }
+                
+                try {
+                    // 3. Create user (WARNING: Storing plain text password is insecure!)
+                    await addDoc(usersRef, {
+                        username: usernameInput,
+                        usernameLower: usernameInput.toLowerCase(),
+                        password: passwordInput, // In a real app, HASH this server-side.
+                        assignedKeyId: keyDoc.id,
+                    });
+
+                    // 4. Update the key to 'claimed'
+                    await updateDoc(doc(keysRef, keyDoc.id), {
+                        status: 'claimed',
+                        claimedBy: usernameInput,
+                    });
+
+                    showToast('Account created successfully! Please log in.');
+                    registerForm.reset();
+                    showView(loginView);
+
+                } catch (error) {
+                    console.error("Registration error: ", error);
+                    showToast("Could not create account. See console.", false);
+                }
+            }
+            
+            async function handleLogin(e) {
+                e.preventDefault();
+                const usernameInput = document.getElementById('login-username').value;
+                const passwordInput = document.getElementById('login-password').value;
+
+                const usersRef = collection(db, `artifacts/${__app_id}/public/data/users`);
+                const q = query(usersRef, 
+                    where("usernameLower", "==", usernameInput.toLowerCase()),
+                    where("password", "==", passwordInput) // Insecure direct password check
+                );
+
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    showToast('Invalid username or password.', false);
+                    return;
+                }
+
+                loggedInUser = querySnapshot.docs[0].data();
+                const userKeyRef = doc(db, `artifacts/${__app_id}/public/data/keys`, loggedInUser.assignedKeyId);
+                const userKeySnap = await getDoc(userKeyRef);
+                
+                if (!userKeySnap.exists()) {
+                    showToast("Could not find your license key.", false);
+                    return;
+                }
+                
+                const userKey = userKeySnap.data();
+                memberUsername.textContent = loggedInUser.username;
+                memberKeyValue.textContent = userKey.value;
+                memberKeyExpiry.textContent = userKey.expiresAt || 'Never';
+                
+                showView(memberDashboardView);
+            }
+
+            function handleLogout() {
+                loggedInUser = null;
+                // Detach Firestore listener if it exists
+                if (keysUnsubscribe) {
+                    keysUnsubscribe();
+                    keysUnsubscribe = null;
+                }
+                showView(purchaseView);
+            }
+
+            async function handleGenerateKeySubmit(e) {
+                e.preventDefault();
+                const formData = new FormData(generateKeyForm);
+                const expirationSetting = formData.get('expiration');
+
+                let expiresAt = null;
+                if (expirationSetting !== 'permanent') {
+                    const days = parseInt(expirationSetting, 10);
+                    const expirationDate = new Date();
+                    expirationDate.setDate(expirationDate.getDate() + days);
+                    expiresAt = expirationDate.toLocaleString();
+                }
+
+                const newKey = {
+                    value: `shdx_live_${[...Array(32)].map(() => Math.random().toString(36)[2]).join('')}`,
+                    createdAt: new Date().toISOString(),
+                    expiresAt: expiresAt,
+                    status: 'available',
+                    claimedBy: null,
+                };
+                
+                try {
+                    const keysCollection = collection(db, `artifacts/${__app_id}/public/data/keys`);
+                    await addDoc(keysCollection, newKey);
+                    closeModal();
+                    showToast('New key generated successfully!');
+                } catch (error) {
+                    console.error("Error generating key: ", error);
+                    showToast("Failed to generate key. Check console.", false);
+                }
+            }
+            
+            async function handleDeleteKey(keyId) {
+                // Removed unsupported confirm() dialog
+                try {
+                    const keyDocRef = doc(db, `artifacts/${__app_id}/public/data/keys`, keyId);
+                    await deleteDoc(keyDocRef);
+                    showToast('Key deleted.');
+                } catch(error) {
+                    console.error("Error deleting key:", error);
+                    showToast("Failed to delete key.", false);
+                }
+            }
+
+            function openModal() {
+                generateKeyForm.reset();
+                generateKeyModal.classList.remove('hidden');
+                setTimeout(() => generateKeyModal.classList.remove('opacity-0'), 10);
+            }
+
+            function closeModal() {
+                generateKeyModal.classList.add('opacity-0');
+                setTimeout(() => generateKeyModal.classList.add('hidden'), 300);
+            }
+            
+            // --- INITIALIZATION ---
+            initializeFirebase();
+        });
+    </script>
+</body>
+</html>
+

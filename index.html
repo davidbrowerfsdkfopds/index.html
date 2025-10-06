@@ -332,9 +332,9 @@
     <!-- Firebase SDK -->
     <script type="module">
         // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc, onSnapshot, deleteDoc, setLogLevel, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc, onSnapshot, deleteDoc, setLogLevel, getDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
         document.addEventListener('DOMContentLoaded', async () => {
             lucide.createIcons();
@@ -426,33 +426,14 @@
              // --- FIREBASE INITIALIZATION ---
             async function initializeFirebase() {
                 try {
-                    // =================================================================
-                    // ===================  ACTION REQUIRED BY YOU  ====================
-                    //
-                    //  1. Go to your Firebase project console.
-                    //  2. Go to Project Settings (click the gear icon ⚙️).
-                    //  3. Scroll down to "Your apps" and find your web app.
-                    //  4. Copy the entire firebaseConfig object.
-                    //  5. Replace the placeholder object below with your real one.
-                    //
-                    //  IT SHOULD LOOK SOMETHING LIKE THIS (WITH YOUR REAL VALUES):
-                    //  const firebaseConfig = {
-                    //      apiKey: "AIzaSyB...[your key]",
-                    //      authDomain: "your-project-id.firebaseapp.com",
-                    //      projectId: "your-project-id",
-                    //      storageBucket: "your-project-id.appspot.com",
-                    //      messagingSenderId: "1234567890",
-                    //      appId: "1:1234567890:web:abcdef123456"
-                    //  };
-                    //
-                    // =================================================================
-                    const firebaseConfig = {
-                        apiKey: "YOUR_API_KEY_HERE",
-                        authDomain: "YOUR_AUTH_DOMAIN_HERE",
-                        projectId: "YOUR_PROJECT_ID_HERE",
-                        storageBucket: "YOUR_STORAGE_BUCKET_HERE",
-                        messagingSenderId: "YOUR_SENDER_ID_HERE",
-                        appId: "YOUR_APP_ID_HERE"
+                     const firebaseConfig = {
+                        apiKey: "AIzaSyBrxBEDThK19rx7emWV5FAbd-sWUqxClWM",
+                        authDomain: "shadex-4a75d.firebaseapp.com",
+                        projectId: "shadex-4a75d",
+                        storageBucket: "shadex-4a75d.appspot.com",
+                        messagingSenderId: "36492185195",
+                        appId: "1:36492185195:web:60403693ec4bcd92cc2b2e",
+                        measurementId: "G-36ZP1PPW13"
                     };
 
                     if (!firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("YOUR_")) {
@@ -790,3 +771,4 @@
     </script>
 </body>
 </html>
+

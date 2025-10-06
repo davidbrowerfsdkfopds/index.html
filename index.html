@@ -58,6 +58,15 @@
             <p class="mt-4 text-gray-400">Connecting to Shadex...</p>
         </div>
 
+        <!-- Firebase Config Error View -->
+        <div id="config-error-view" class="w-full max-w-lg hidden text-center">
+            <i data-lucide="alert-triangle" class="w-12 h-12 mx-auto text-red-500"></i>
+            <h1 class="mt-4 text-2xl font-bold text-red-400">Configuration Error</h1>
+            <p class="mt-2 text-gray-400">The Firebase configuration is missing or invalid.</p>
+            <div class="mt-1 text-sm text-gray-500">Please edit the <code class="bg-gray-700 text-pink-400 px-1 py-0.5 rounded">index.html</code> file, find the <code class="bg-gray-700 text-pink-400 px-1 py-0.5 rounded">firebaseConfig</code> object, and paste your project's configuration details there.</div>
+        </div>
+
+
         <!-- Purchase/Landing View -->
         <div id="purchase-view" class="w-full max-w-lg hidden">
             <div class="text-center mb-8">
@@ -331,13 +340,14 @@
             lucide.createIcons();
             
             // --- GLOBAL FIREBASE & APP STATE ---
-            let auth, db;
+            let auth, db, appId;
             let loggedInUser = null;
             let keysUnsubscribe = null; // To detach the real-time listener on logout
             
             // --- DOM ELEMENTS ---
             const allViews = document.querySelectorAll('#app > div');
             const loadingView = document.getElementById('loading-view');
+            const configErrorView = document.getElementById('config-error-view');
             const purchaseView = document.getElementById('purchase-view');
             const loginView = document.getElementById('login-view');
             const registerView = document.getElementById('register-view');
@@ -416,47 +426,97 @@
              // --- FIREBASE INITIALIZATION ---
             async function initializeFirebase() {
                 try {
-                    // These are special variables provided by the environment
-                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                    const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+                    // =================================================================
+                    // ===================  ACTION REQUIRED BY YOU  ====================
+                    //
+                    //  1. Go to your Firebase project console.
+                    //  2. Go to Project Settings (click the gear icon ⚙️).
+                    //  3. Scroll down to "Your apps" and find your web app.
+                    //  4. Copy the entire firebaseConfig object.
+                    //  5. Replace the placeholder object below with your real one.
+                    //
+                    //  IT SHOULD LOOK SOMETHING LIKE THIS (WITH YOUR REAL VALUES):
+                    //  const firebaseConfig = {
+                    //      apiKey: "AIzaSyB...[your key]",
+                    //      authDomain: "your-project-id.firebaseapp.com",
+                    //      projectId: "your-project-id",
+                    //      storageBucket: "your-project-id.appspot.com",
+                    //      messagingSenderId: "1234567890",
+                    //      appId: "1:1234567890:web:abcdef123456"
+                    //  };
+                    //
+                    // =================================================================
+                    const firebaseConfig = {
+                        apiKey: "YOUR_API_KEY_HERE",
+                        authDomain: "YOUR_AUTH_DOMAIN_HERE",
+                        projectId: "YOUR_PROJECT_ID_HERE",
+                        storageBucket: "YOUR_STORAGE_BUCKET_HERE",
+                        messagingSenderId: "YOUR_SENDER_ID_HERE",
+                        appId: "YOUR_APP_ID_HERE"
+                    };
 
-                    if (!firebaseConfig.apiKey) {
-                        showToast("Firebase configuration is missing.", false);
+                    if (!firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("YOUR_")) {
+                        console.error("Firebase configuration is missing or invalid in index.html. Please paste your config details.");
+                        showView(configErrorView);
                         return;
                     }
+                    
+                    // The App ID for database paths is derived from your project ID in the config
+                    appId = firebaseConfig.projectId;
 
                     const app = initializeApp(firebaseConfig);
                     auth = getAuth(app);
                     db = getFirestore(app);
                     setLogLevel('debug');
 
-                    onAuthStateChanged(auth, (user) => {
+                    onAuthStateChanged(auth, async (user) => {
                         if (user) {
                             console.log("Authenticated user found:", user.uid);
                             showView(purchaseView);
                         } else {
-                            console.log("No user found, signing in anonymously or with token.");
-                            // Sign in the user. This is required to interact with Firestore based on security rules.
-                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                                signInWithCustomToken(auth, __initial_auth_token).catch(error => console.error("Custom token sign-in error:", error));
-                            } else {
-                                signInAnonymously(auth).catch(error => console.error("Anonymous sign-in error:", error));
+                            console.log("No user found, attempting to sign in anonymously.");
+                             try {
+                                await signInAnonymously(auth);
+                                // On success, the listener will re-trigger with a user, showing the purchase view.
+                            } catch (error) {
+                                console.error("Anonymous sign-in error:", error);
+                                if (error.code === 'auth/invalid-api-key') {
+                                     showView(configErrorView);
+                                     const errorTitle = document.querySelector("#config-error-view h1");
+                                     const errorP1 = document.querySelector("#config-error-view p:nth-of-type(1)");
+                                     const errorContainer = document.querySelector("#config-error-view div");
+                                     if (errorTitle) errorTitle.textContent = "Invalid API Key";
+                                     if (errorP1) errorP1.textContent = "Firebase rejected your API key. This is usually caused by one of these issues:";
+                                     if (errorContainer) errorContainer.innerHTML = `
+                                        <ul class="text-left list-disc list-inside mt-4 space-y-2 text-sm text-gray-400">
+                                            <li>The <code class="bg-gray-700 text-pink-400 px-1 py-0.5 rounded">firebaseConfig</code> in your code is not an exact copy-paste from your project settings.</li>
+                                            <li>Your website's domain is not in the "Authorized domains" list. Go to Firebase Console > Authentication > Settings > Authorized domains and add your website's URL.</li>
+                                            <li>The "Anonymous" sign-in provider is not enabled. Go to Firebase Console > Authentication > Sign-in method and enable it.</li>
+                                        </ul>
+                                     `;
+                                } else {
+                                     showToast("Could not connect to services. Check console.", false);
+                                }
                             }
                         }
                     });
 
-                } catch (error) {
+                } catch (error)
+                 {
                     console.error("Firebase Init Error:", error);
-                    showToast("Failed to initialize. Check console.", false);
+                    showView(configErrorView);
+                    const errorText = document.querySelector("#config-error-view p");
+                    if(errorText) errorText.textContent = "An error occurred during Firebase initialization. Check the console for details."
                 }
             }
 
             // --- RENDER FUNCTIONS ---
             function listenForKeys() {
+                if (!appId) return; // Don't run if Firebase init failed
                 // Detach any previous listener
                 if (keysUnsubscribe) keysUnsubscribe();
 
-                const keysCollection = collection(db, `artifacts/${__app_id}/public/data/keys`);
+                const keysCollection = collection(db, `artifacts/${appId}/public/data/keys`);
                 
                 keysUnsubscribe = onSnapshot(keysCollection, (snapshot) => {
                     const allKeys = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -557,6 +617,7 @@
 
             async function handleRegister(e) {
                 e.preventDefault();
+                if (!appId) return;
                 const keyInput = document.getElementById('register-key').value.trim();
                 const usernameInput = document.getElementById('register-username').value.trim();
                 const passwordInput = document.getElementById('register-password').value;
@@ -566,8 +627,8 @@
                     return;
                 }
                 
-                const keysRef = collection(db, `artifacts/${__app_id}/public/data/keys`);
-                const usersRef = collection(db, `artifacts/${__app_id}/public/data/users`);
+                const keysRef = collection(db, `artifacts/${appId}/public/data/keys`);
+                const usersRef = collection(db, `artifacts/${appId}/public/data/users`);
                 
                 // 1. Check if key is valid and available
                 const keyQuery = query(keysRef, where("value", "==", keyInput));
@@ -622,10 +683,11 @@
             
             async function handleLogin(e) {
                 e.preventDefault();
+                if (!appId) return;
                 const usernameInput = document.getElementById('login-username').value;
                 const passwordInput = document.getElementById('login-password').value;
 
-                const usersRef = collection(db, `artifacts/${__app_id}/public/data/users`);
+                const usersRef = collection(db, `artifacts/${appId}/public/data/users`);
                 const q = query(usersRef, 
                     where("usernameLower", "==", usernameInput.toLowerCase()),
                     where("password", "==", passwordInput) // Insecure direct password check
@@ -639,7 +701,7 @@
                 }
 
                 loggedInUser = querySnapshot.docs[0].data();
-                const userKeyRef = doc(db, `artifacts/${__app_id}/public/data/keys`, loggedInUser.assignedKeyId);
+                const userKeyRef = doc(db, `artifacts/${appId}/public/data/keys`, loggedInUser.assignedKeyId);
                 const userKeySnap = await getDoc(userKeyRef);
                 
                 if (!userKeySnap.exists()) {
@@ -667,6 +729,7 @@
 
             async function handleGenerateKeySubmit(e) {
                 e.preventDefault();
+                if (!appId) return;
                 const formData = new FormData(generateKeyForm);
                 const expirationSetting = formData.get('expiration');
 
@@ -687,7 +750,7 @@
                 };
                 
                 try {
-                    const keysCollection = collection(db, `artifacts/${__app_id}/public/data/keys`);
+                    const keysCollection = collection(db, `artifacts/${appId}/public/data/keys`);
                     await addDoc(keysCollection, newKey);
                     closeModal();
                     showToast('New key generated successfully!');
@@ -698,9 +761,10 @@
             }
             
             async function handleDeleteKey(keyId) {
+                if (!appId) return;
                 // Removed unsupported confirm() dialog
                 try {
-                    const keyDocRef = doc(db, `artifacts/${__app_id}/public/data/keys`, keyId);
+                    const keyDocRef = doc(db, `artifacts/${appId}/public/data/keys`, keyId);
                     await deleteDoc(keyDocRef);
                     showToast('Key deleted.');
                 } catch(error) {
